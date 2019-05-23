@@ -5,12 +5,12 @@ module.exports = function(app) {
   // users Routes
   app
     .route("/users")
-    .get(usersList.list_all_users)
-    .post(usersList.create_a_user);
+    .get(usersList.getUsers)
+    .post(usersList.createUser);
 
   app
     .route("/users/:userId")
-    .get(usersList.read_a_user)
-    .put(usersList.update_a_user)
-    .delete(usersList.delete_a_user);
+    .get(usersList.getUser)
+    .put(usersList.updateUser)
+    .delete(usersList.deleteUser);
 };

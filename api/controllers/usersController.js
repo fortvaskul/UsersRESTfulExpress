@@ -3,48 +3,74 @@
 var mongoose = require("mongoose"),
   User = mongoose.model("Users");
 
-exports.list_all_users = function(req, res) {
-  User.find({}, function(err, user) {
-    if (err) res.send(err);
-    res.json(user);
-  });
+const getUsers = function(req, res) {
+  // User.find({}, function(err, user) {
+  //   if (err) res.send(err);
+  //   res.json(user);
+  // });
+  User.find({})
+    .then(user => res.json(user))
+    .catch(err => res.send(err));
 };
 
-exports.create_a_user = function(req, res) {
+const createUser = function(req, res) {
   var new_user = new User(req.body);
-  new_user.save(function(err, user) {
-    if (err) res.send(err);
-    res.json(user);
-  });
+  // new_user.save(function(err, user) {
+  //   if (err) res.send(err);
+  //   res.json(user);
+  // });
+  new_user
+    .save()
+    .then(user => res.json(user))
+    .catch(err => res.send(err));
 };
 
-exports.read_a_user = function(req, res) {
-  User.findById(req.params.userId, function(err, user) {
-    if (err) res.send(err);
-    res.json(user);
-  });
+const getUser = function(req, res) {
+  // User.findById(req.params.userId, function(err, user) {
+  //   if (err) res.send(err);
+  //   res.json(user);
+  // });
+  User.findById(req.params.userId)
+    .then(user => res.json(user))
+    .catch(err => res.send(err));
 };
 
-exports.update_a_user = function(req, res) {
-  User.findOneAndUpdate(
-    { _id: req.params.userId },
-    req.body,
-    { new: true },
-    function(err, user) {
-      if (err) res.send(err);
-      res.json(user);
-    }
-  );
+const updateUser = function(req, res) {
+  // User.findOneAndUpdate(
+  //   { _id: req.params.userId },
+  //   req.body,
+  //   { new: true },
+  //   function(err, user) {
+  //     if (err) res.send(err);
+  //     res.json(user);
+  //   }
+  // );
+  User.findOneAndUpdate({ _id: req.params.userId }, req.body, { new: true })
+    .then(user => res.json(user))
+    .catch(err => res.send(err));
 };
 
-exports.delete_a_user = function(req, res) {
-  User.remove(
-    {
-      _id: req.params.userId
-    },
-    function(err, user) {
-      if (err) res.send(err);
-      res.json({ message: "User successfully deleted" });
-    }
-  );
+const deleteUser = function(req, res) {
+  // User.remove(
+  //   {
+  //     _id: req.params.userId
+  //   },
+  //   function(err, user) {
+  //     if (err) res.send(err);
+  //     res.json({ message: "User successfully deleted" });
+  //   }
+  // );
+  User.remove({
+    _id: req.params.userId
+  })
+    .then(() => res.json({ message: "User successfully deleted" }))
+    .catch(err => res.send(err));
+};
+
+module.exports = {
+  getUsers,
+  createUser,
+  getUser,
+  updateUser,
+  deleteUser
 };
