@@ -1,18 +1,12 @@
 "use strict";
 
-var mongoose = require("mongoose"),
+const mongoose = require("mongoose"),
+  jwt = require("jsonwebtoken"),
+  bcrypt = require("bcrypt"),
   User = mongoose.model("User");
 
 const getUsers = function(req, res) {
   User.find({})
-    .then(user => res.json(user))
-    .catch(err => res.send(err));
-};
-
-const createUser = function(req, res) {
-  var new_user = new User(req.body);
-  new_user
-    .save()
     .then(user => res.json(user))
     .catch(err => res.send(err));
 };
@@ -111,9 +105,48 @@ const deleteFriend = function(req, res) {
     .catch(err => res.send(err));
 };
 
+const register = function(req, res) {
+  var new_user = new User(req.body);
+  new_user.hash_password = bcrypt.hashSync(req.body.password, 10);
+  new_user
+    .save()
+    .then(user => {
+      user.hash_password = undefined;
+      return res.json(user);
+    })
+    .catch(err => res.send(err));
+};
+
+const signIn = function(req, res) {
+  User.findOne({
+    email: req.body.email
+  })
+    .then(user => {
+      if (!user || !user.comparePassword(req.body.password)) {
+        return res.status(401).json({
+          message: "Authentication failed. Invalid user or password."
+        });
+      }
+      return res.json({
+        token: jwt.sign(
+          { email: user.email, name: user.name, _id: user._id },
+          "RESTFULAPIs"
+        )
+      });
+    })
+    .catch(err => res.send(err));
+};
+
+const loginRequired = function(req, res, next) {
+  if (req.user) {
+    next();
+  } else {
+    return res.status(401).json({ message: "Unauthorized user!" });
+  }
+};
+
 module.exports = {
   getUsers,
-  createUser,
   getUser,
   updateUser,
   deleteUser,
@@ -122,5 +155,8 @@ module.exports = {
   addFriend,
   rejReq,
   getFriends,
-  deleteFriend
+  deleteFriend,
+  register,
+  signIn,
+  loginRequired
 };
