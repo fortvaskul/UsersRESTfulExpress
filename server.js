@@ -2,40 +2,40 @@
 
 const express = require("express"),
   app = express(),
-  port = process.env.PORT || 3000,
-  mongoose = require("mongoose"),
-  User = require("./api/models/userModel"), //created model loading
   bodyParser = require("body-parser"),
-  jsonwebtoken = require("jsonwebtoken");
+  passport = require("passport"),
+  mongoose = require("mongoose"),
+  config = require("./api/config/config"),
+  port = process.env.PORT || 3000,
+  cors = require("cors"),
+  //created model loading
+  User = require("./api/models/userModel");
 
 // mongoose instance connection url connection
 mongoose.Promise = global.Promise;
-mongoose.connect("mongodb://localhost/Usersdb");
+mongoose.connect(config.db, { useNewUrlParser: true, useCreateIndex: true });
 
-app.use(bodyParser.urlencoded({ extended: true }));
+//check mongoose connection
+const connection = mongoose.connection;
+connection.once("open", () => {
+  console.log("MongoDB database connection established successfully!");
+});
+connection.on("error", err => {
+  console.log(
+    "MongoDB connection error. Please make sure MongoDB is running. " + err
+  );
+  process.exit();
+});
+
+app.use(cors());
+
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // middleware
-app.use(function(req, res, next) {
-  if (
-    req.headers &&
-    req.headers.authorization &&
-    req.headers.authorization.split(" ")[0] === "JWT"
-  ) {
-    jsonwebtoken.verify(
-      req.headers.authorization.split(" ")[1],
-      "RESTFULAPIs",
-      function(err, decode) {
-        if (err) req.user = undefined;
-        req.user = decode;
-        next();
-      }
-    );
-  } else {
-    req.user = undefined;
-    next();
-  }
-});
+app.use(passport.initialize());
+var passportMiddleware = require("./api/middleware/passport");
+passport.use(passportMiddleware);
 
 const routes = require("./api/routes/usersRoutes"); //importing route
 routes(app); //register the route
@@ -45,6 +45,6 @@ app.use(function(req, res) {
   res.status(404).send({ url: req.originalUrl + " not found" });
 });
 
-app.listen(port);
-
-console.log("users list RESTful API server started on: " + port);
+app.listen(port, () => {
+  console.log("users list RESTful API server started on: " + port);
+});

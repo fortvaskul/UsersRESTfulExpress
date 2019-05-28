@@ -1,31 +1,40 @@
 "use strict";
 
 module.exports = function(app) {
-  var usersList = require("../controllers/usersController");
+  var authHandlers = require("../controllers/authСontroller.js"),
+    usersList = require("../controllers/usersController"),
+    friendsList = require("../controllers/friendsController.js"),
+    passport = require("passport"),
+    loginRequired = passport.authenticate("jwt", { session: false });
 
   // auth
-  app.route("/auth/register").post(usersList.register);
-  app.route("/auth/sign_in").post(usersList.signIn);
+  app.route("/auth/register").post(authHandlers.register); // registration
+  app.route("/auth/sign_in").post(authHandlers.signIn); // sing in
 
-  // users Routes
-  app.route("/users").get(usersList.getUsers);
+  // users
+  app.route("/users").get(loginRequired, usersList.getUsers); // view all users
 
   app
     .route("/users/:userId")
-    .get(usersList.loginRequired, usersList.getUser)
-    .put(usersList.updateUser)
-    .delete(usersList.deleteUser)
-    // receive user id, who wanna be friend
-    .patch(usersList.addReq);
+    .get(loginRequired, usersList.getUser) // view user
+    .put(loginRequired, usersList.updateUser) // update information about user
+    .delete(loginRequired, usersList.deleteUser) // delete the user
 
-  // friend requests
-  app.route("/users/:userId/friend_requests").get(usersList.getReqs);
+    // friends
+    .patch(loginRequired, friendsList.addReq); // receive user id, who wanna be friend
+
+  app
+    .route("/users/:userId/friend_requests")
+    .get(loginRequired, friendsList.getReqs); // view friend requests
   app
     .route("/users/:userId/friend_requests&:reqId")
-    .patch(usersList.addFriend) // accept a friend request
-    .delete(usersList.rejReq);
+    .patch(loginRequired, friendsList.addFriend) // accept friend request
+    .delete(loginRequired, friendsList.rejReq); // reject friend request
 
-  //friends
-  app.route("/users/:userId/friends").get(usersList.getFriends);
-  app.route("/users/:userId/friends&:friendId").delete(usersList.deleteFriend); // delete the friend
+  app
+    .route("/users/:userId/friends")
+    .get(loginRequired, friendsList.getFriends); // view friends
+  app
+    .route("/users/:userId/friends&:friendId")
+    .delete(loginRequired, friendsList.deleteFriend); // delete the friend
 };

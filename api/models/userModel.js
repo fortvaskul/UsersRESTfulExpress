@@ -16,7 +16,7 @@ var userSchema = new Schema({
     lowercase: true,
     trim: true
   },
-  hash_password: {
+  password: {
     type: String
   },
   created_date: {
@@ -30,7 +30,28 @@ var userSchema = new Schema({
   friends: [{ type: Schema.Types.ObjectId, ref: "User" }]
 });
 
-userSchema.methods.comparePassword = password =>
-  bcrypt.compareSync(password, this.hash_password);
+userSchema.pre("save", function(next) {
+  var user = this;
+
+  if (!user.isModified("password")) return next();
+
+  bcrypt.genSalt(10, function(err, salt) {
+    if (err) return next(err);
+
+    bcrypt.hash(user.password, salt, function(err, hash) {
+      if (err) return next(err);
+
+      user.password = hash;
+      next();
+    });
+  });
+});
+
+userSchema.methods.comparePassword = function(regPassword, cb) {
+  bcrypt.compare(regPassword, this.password, (err, isMatch) => {
+    if (err) return cb(err);
+    cb(null, isMatch);
+  });
+};
 
 module.exports = mongoose.model("User", userSchema);
