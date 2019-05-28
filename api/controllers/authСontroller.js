@@ -6,31 +6,29 @@ const mongoose = require("mongoose"),
   config = require("../config/config");
 
 function createToken(user) {
-  return jwt.sign({ id: user.id, email: user.email }, config.jwtSecret, {
+  return jwt.sign({ id: user.id, name: user.name }, config.jwtSecret, {
     expiresIn: 31556926 // 1 year in seconds
   });
 }
 
 const register = (req, res) => {
   if (!req.body.email || !req.body.password) {
-    return res.status(400).json({ msg: "You need to send email and password" });
+    return res.status(400).send({ msg: "You need to send email and password" });
   }
 
-  User.findOne({ email: req.body.email }, (err, user) => {
-    if (err) {
-      return res.status(400).json({ msg: err });
-    }
+  User.findOne({ email: req.body.email })
+    .then(user => {
+      if (user) {
+        return res.status(400).send({ msg: "The user already exists" });
+      }
 
-    if (user) {
-      return res.status(400).json({ msg: "The user already exists" });
-    }
-
-    let newUser = User(req.body);
-    newUser
-      .save()
-      .then(user => res.json(user))
-      .catch(err => res.send(err));
-  });
+      let newUser = User(req.body);
+      newUser
+        .save()
+        .then(user => res.json(user))
+        .catch(err => res.send(err));
+    })
+    .catch(err => res.send(err));
 };
 
 const signIn = (req, res) => {
@@ -41,7 +39,7 @@ const signIn = (req, res) => {
   User.findOne({ email: req.body.email })
     .then(user => {
       if (!user) {
-        return res.json({ msg: "The user does not exist" });
+        return res.send({ msg: "The user does not exist" });
       }
 
       user.comparePassword(req.body.password, (err, isMatch) => {
@@ -49,9 +47,8 @@ const signIn = (req, res) => {
           return res.json({
             token: createToken(user)
           });
-        } else {
-          return res.status(400).json({ msg: "The password don't match." });
         }
+        return res.status(400).send({ msg: "The password don't match." });
       });
     })
     .catch(err => res.send(err));

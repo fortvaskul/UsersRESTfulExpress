@@ -47,10 +47,10 @@ userSchema.pre("save", function(next) {
   });
 });
 
-userSchema.methods.comparePassword = function(regPassword, cb) {
+userSchema.methods.comparePassword = function(regPassword, done) {
   bcrypt.compare(regPassword, this.password, (err, isMatch) => {
-    if (err) return cb(err);
-    cb(null, isMatch);
+    if (err) return done(err);
+    done(null, isMatch);
   });
 };
 
