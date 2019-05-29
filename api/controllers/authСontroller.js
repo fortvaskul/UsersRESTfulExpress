@@ -12,8 +12,8 @@ function createToken(user) {
 }
 
 const register = (req, res) => {
-  if (!req.body.email || !req.body.password) {
-    return res.status(400).send({ msg: "You need to send email and password" });
+  if (!req.body.password) {
+    return res.status(400).send({ msg: "You need to send a password" });
   }
 
   let newUser = User(req.body);
