@@ -21,20 +21,16 @@ module.exports = function(app) {
     .delete(loginRequired, usersList.deleteUser) // delete the user
 
     // friends
-    .patch(loginRequired, friendsList.addReq); // receive user id, who wanna be friend
+    .patch(loginRequired, friendsList.addReq); // receive auth user id, who want to be friend
 
+  app.route("/friend_requests").get(loginRequired, friendsList.getReqs); // view friend requests
   app
-    .route("/users/:userId/friend_requests")
-    .get(loginRequired, friendsList.getReqs); // view friend requests
-  app
-    .route("/users/:userId/friend_requests&:reqId")
+    .route("/friend_requests&:reqId")
     .patch(loginRequired, friendsList.addFriend) // accept friend request
     .delete(loginRequired, friendsList.rejReq); // reject friend request
 
+  app.route("/friends").get(loginRequired, friendsList.getFriends); // view friends
   app
-    .route("/users/:userId/friends")
-    .get(loginRequired, friendsList.getFriends); // view friends
-  app
-    .route("/users/:userId/friends&:friendId")
-    .delete(loginRequired, friendsList.deleteFriend); // delete the friend
+    .route("/friends&:friendId")
+    .delete(loginRequired, friendsList.deleteFriend); // delete the friend via id
 };

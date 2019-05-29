@@ -6,18 +6,20 @@ var mongoose = require("mongoose"),
 
 var opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: config.jwtSecret
+  secretOrKey: config.jwtSecret,
+  passReqToCallback: true
 };
 
-module.exports = new JwtStrategy(opts, function(jwt_payload, done) {
+module.exports = new JwtStrategy(opts, function(req, jwt_payload, done) {
   User.findById(jwt_payload.id, function(err, user) {
     if (err) {
       return done(err, false);
     }
     if (user) {
-      return done(null, user);
+      req.user = user;
+      done(null, user);
     } else {
-      return done(null, false);
+      done(null, false);
     }
   });
 });
