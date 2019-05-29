@@ -16,19 +16,11 @@ const register = (req, res) => {
     return res.status(400).send({ msg: "You need to send email and password" });
   }
 
-  User.findOne({ email: req.body.email })
-    .then(user => {
-      if (user) {
-        return res.status(400).send({ msg: "The user already exists" });
-      }
-
-      let newUser = User(req.body);
-      newUser
-        .save()
-        .then(user => res.json(user))
-        .catch(err => res.send(err));
-    })
-    .catch(err => res.send(err));
+  let newUser = User(req.body);
+  newUser
+    .save()
+    .then(user => res.json(user))
+    .catch(() => res.status(400).send({ msg: "The email already exists" }));
 };
 
 const signIn = (req, res) => {
