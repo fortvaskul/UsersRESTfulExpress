@@ -21,7 +21,7 @@ module.exports = function(app) {
     .delete(loginRequired, usersList.deleteUser) // delete the user
 
     // friends
-    .patch(loginRequired, friendsList.addReq); // receive auth user id, who wanna be friend
+    .patch(loginRequired, friendsList.addReq); // receive auth user id, who want to be friend
 
   app.route("/friend_requests").get(loginRequired, friendsList.getReqs); // view friend requests
   app

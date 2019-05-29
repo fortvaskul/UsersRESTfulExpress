@@ -12,7 +12,7 @@ var userSchema = new Schema({
   email: {
     type: String,
     required: "!Please enter the email",
-    unique: "!The email already exists",
+    unique: true,
     lowercase: true,
     trim: true
   },
