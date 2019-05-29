@@ -20,7 +20,7 @@ const register = (req, res) => {
   newUser
     .save()
     .then(user => res.json(user))
-    .catch(() => res.status(400).send({ msg: "The email already exists" }));
+    .catch(err => res.send(err));
 };
 
 const signIn = (req, res) => {
